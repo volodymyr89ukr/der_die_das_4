@@ -7,7 +7,7 @@ const words = [
   { noun: "Tisch", gender: "der", translation: "стіл" },
   { noun: "Lampe", gender: "die", translation: "лампа" },
   { noun: "Auto", gender: "das", translation: "авто" },
-  // Додай ще тисячі тут…
+  // Додай ще інші слова...
 ];
 
 let availableWords = [...words];
@@ -41,37 +41,43 @@ function showNextWord() {
     "question"
   ).innerText = `${currentWord.noun} (${currentWord.translation})`;
   document.getElementById("feedback").innerText = "";
-  playAudio(`${currentWord.gender} ${currentWord.noun}`);
 }
 
 function checkAnswer(userInput) {
   if (!currentWord) return;
 
+  let message = "";
+  let isCorrect = false;
+
   if (userInput === currentWord.gender) {
     const count = correctStreak.get(currentWord.noun) || 0;
     correctStreak.set(currentWord.noun, count + 1);
-
-    document.getElementById(
-      "feedback"
-    ).innerText = `✅ Правильно! ${currentWord.gender} ${currentWord.noun} (${currentWord.translation})`;
+    isCorrect = true;
+    message = `✅ Правильно! ${currentWord.gender} ${currentWord.noun} (${currentWord.translation})`;
 
     if (correctStreak.get(currentWord.noun) >= 2) {
       activeWords = activeWords.filter((w) => w.noun !== currentWord.noun);
     }
   } else {
     correctStreak.set(currentWord.noun, 0);
-    document.getElementById(
-      "feedback"
-    ).innerText = `❌ Неправильно. Правильна відповідь: ${currentWord.gender} ${currentWord.noun} (${currentWord.translation})`;
+    message = `❌ Неправильно. Правильна відповідь: ${currentWord.gender} ${currentWord.noun} (${currentWord.translation})`;
   }
 
-  setTimeout(showNextWord, 1200);
+  document.getElementById("feedback").innerText = message;
+
+  // Затримка озвучення — 0.2 сек після відповіді
+  setTimeout(() => {
+    playAudio(`${currentWord.gender} ${currentWord.noun}`);
+  }, 100);
+
+  // Затримка перед новим словом — 2.2 сек, щоб встигла відтворитися вимова
+  setTimeout(showNextWord, 2100);
 }
 
 function playAudio(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "de-DE";
-  speechSynthesis.cancel(); // зупинити попереднє озвучення
+  speechSynthesis.cancel(); // зупинити попереднє, якщо ще йде
   speechSynthesis.speak(utterance);
 }
 
